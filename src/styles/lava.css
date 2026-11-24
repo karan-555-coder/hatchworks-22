@@ -1,0 +1,406 @@
+/*
+ * Molten Lava skin, loaded last.
+ *
+ *   palette     deep navy #120806 · electric violet #ff4500 · aqua #ffb000 · mist #fff4ea
+ *   motion      cinematic reveals: clip-path wipes for headings, cards and photos
+ *   hover       3D tilt cards with a cursor-following glare
+ *   atmosphere  slow mesh-gradient lava blobs behind the hero and section bands
+ *   type        gradient-filled display headings with a slow shimmer
+ *
+ * Visual only: no layout, sizes, content or order change. Colours are remapped at build time
+ * (scripts/variants/lava.mjs); this file styles with the surface-aware variables that step
+ * maintains (--lv-fg, --lv-accent, --lv-line, --lv-glow, ...). Classes prefixed lv- are added
+ * by scripts/lava.js.
+ */
+
+:root {
+  --lv-void: #0a0403;
+  --lv-navy: #120806;
+  --lv-navy2: #1a0c09;
+  --lv-violet: #ff4500;
+  --lv-violet-hi: #ff7a45;
+  --lv-aqua: #ffb000;
+  --lv-mist: #fff4ea;
+
+  --lv-accent: #ffb000;
+  --lv-accent2: #ffe08a;
+  --lv-white: #fff4ea;
+  --lv-fg: #fff4ea;
+  --lv-fg2: #ead6c8;
+  --lv-muted: #ab8b7d;
+  --lv-deep: #ffd166;
+  --lv-hot: #ff7a45;
+  --lv-line: rgba(255, 244, 234, .14);
+  --lv-line2: rgba(255, 244, 234, .3);
+  --lv-glow: #ff4500;
+
+  --lv-ease: cubic-bezier(.16, 1, .3, 1);       /* long, cinematic settle */
+  --lv-ease-io: cubic-bezier(.65, 0, .35, 1);
+  --lv-heading-grad: linear-gradient(100deg, #fff4ea 0%, #ffd166 20%, #ffb000 46%, #ff7a45 72%, #fff4ea 100%);
+}
+
+/* ---------- base ---------------------------------------------------------- */
+html { scrollbar-color: var(--lv-violet) var(--lv-void); color-scheme: dark; }
+body { background-color: var(--lv-navy); color: var(--lv-fg); }
+
+::selection { background: rgba(255, 69, 0, .55); color: #fff; }
+
+:focus-visible { outline: 2px solid var(--lv-aqua) !important; outline-offset: 3px; }
+
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--lv-void); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--lv-violet), var(--lv-aqua));
+  border: 3px solid var(--lv-void); border-radius: 12px;
+}
+
+hr { border-color: var(--lv-line) !important; }
+
+/* ---------- typography: gradient display headings -------------------------- */
+/* .lv-grad is set only on large headings whose own text is light, so accent words keep their colour */
+/* --lv-gw / --lv-gx / --lv-gt (set by lava.js) lay one gradient across the whole heading;
+   the registered --lv-shift slides it so every word shimmers together */
+@property --lv-shift { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.lv-grad {
+  background-image: var(--lv-heading-grad) !important;
+  background-size: var(--lv-gw, 260%) 100% !important;
+  background-position: calc(var(--lv-gx, 0px) - var(--lv-shift)) 50% !important;
+  background-repeat: no-repeat !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;          /* accent words set their own colour and stay solid */
+  text-shadow: none !important;
+}
+.lv-grad.lv-live { animation: lv-shimmer 14s var(--lv-ease-io) infinite alternate; }
+@keyframes lv-shimmer { from { --lv-shift: 0px; } to { --lv-shift: var(--lv-gt, 0px); } }
+
+blockquote { border-left-color: var(--lv-violet) !important; }
+
+/* body-copy links: aqua underline that brightens */
+.lv-prose-link {
+  text-decoration-color: color-mix(in srgb, var(--lv-accent) 55%, transparent) !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 3px;
+  transition: color .25s var(--lv-ease), text-decoration-color .25s var(--lv-ease), text-shadow .25s;
+}
+.lv-prose-link:hover {
+  color: var(--lv-accent) !important;
+  text-decoration-color: var(--lv-accent) !important;
+  text-shadow: 0 0 14px rgba(255, 176, 0, .45);
+}
+
+/* ---------- buttons: glow lighting ---------------------------------------- */
+.lv-btn,
+#hwnav .hw-btn,
+.elementor-button,
+.hs-button,
+input[type="submit"],
+button[type="submit"] {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 10px 28px -12px var(--lv-glow) !important;
+  transition: box-shadow .35s var(--lv-ease), filter .35s var(--lv-ease), translate .35s var(--lv-ease), background-color .25s, color .25s !important;
+}
+.lv-btn:hover,
+#hwnav .hw-btn:hover,
+.elementor-button:hover,
+.hs-button:hover,
+input[type="submit"]:hover,
+button[type="submit"]:hover {
+  translate: 0 -2px;
+  filter: brightness(1.1) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 0 0 1px color-mix(in srgb, var(--lv-glow) 60%, transparent),
+    0 16px 38px -10px var(--lv-glow), 0 0 40px -6px color-mix(in srgb, var(--lv-glow) 55%, transparent) !important;
+}
+.lv-btn:active,
+.elementor-button:active,
+.hs-button:active,
+input[type="submit"]:active,
+button[type="submit"]:active { translate: 0 0; filter: brightness(.96); transition-duration: .08s !important; }
+/* arrow / icon inside a button glides on hover */
+.lv-btn svg, .lv-btn i, .elementor-button svg, .elementor-button i { transition: translate .35s var(--lv-ease); }
+.lv-btn:hover svg, .lv-btn:hover i, .elementor-button:hover svg, .elementor-button:hover i { translate: 3px 0; }
+
+/* pills / tags */
+.lv-pill { transition: box-shadow .3s var(--lv-ease), border-color .3s, color .3s, background-color .3s; }
+a.lv-pill:hover, button.lv-pill:hover {
+  box-shadow: 0 0 0 1px rgba(255, 176, 0, .55), 0 0 18px -4px rgba(255, 176, 0, .6) !important;
+}
+
+/* ---------- form fields ----------------------------------------------------- */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="hidden"]):not([type="file"]):not([type="image"]),
+textarea,
+select { transition: box-shadow .3s var(--lv-ease), border-color .3s; caret-color: var(--lv-aqua); }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="hidden"]):not([type="file"]):not([type="image"]):focus,
+textarea:focus,
+select:focus {
+  outline: 0 !important;
+  border-color: var(--lv-aqua) !important;
+  box-shadow: 0 0 0 3px rgba(255, 176, 0, .18), 0 0 24px -6px rgba(255, 176, 0, .5) !important;
+}
+input::placeholder, textarea::placeholder { color: rgba(255, 244, 234, .45); }
+
+/* ---------- cards: depth + 3D tilt ------------------------------------------ */
+.lv-card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 18px 40px -28px rgba(0, 0, 0, .9);
+  transition: box-shadow .5s var(--lv-ease), border-color .4s, transform .7s var(--lv-ease);
+}
+.lv-card.lv-hot:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 0 1px rgba(255, 69, 0, .45),
+    0 30px 60px -24px rgba(255, 69, 0, .55), 0 0 60px -20px rgba(255, 176, 0, .35) !important;
+}
+/* while tilting, the card follows the pointer quickly and a glare tracks it */
+.lv-card.lv-tilting { transition: box-shadow .5s var(--lv-ease), border-color .4s, transform .12s linear; will-change: transform; }
+.lv-card.lv-glare.lv-tilting {
+  background-image: radial-gradient(560px circle at var(--lv-mx, 50%) var(--lv-my, 50%), rgba(255, 122, 69, .2), rgba(255, 176, 0, .06) 35%, transparent 60%) !important;
+}
+
+/* photos: soft lift on hover */
+.lv-img { transition: filter .6s var(--lv-ease); }
+a:hover .lv-img, .lv-img:hover { filter: saturate(1.12) brightness(1.05); }
+
+/* post-loop cards: titles follow the card surface */
+.e-loop-item .elementor-heading-title { color: var(--lv-fg); }
+
+/* sections drawn over light photography keep navy ink (set by lava.js after sampling the image) */
+.lv-lightzone {
+  --lv-fg: #120806 !important; --lv-fg2: #1f120e !important; --lv-white: #120806 !important; --lv-muted: #4d3a33 !important;
+  --lv-accent: #d93a00 !important; --lv-accent2: #b33000 !important; --lv-deep: #5c1a06 !important; --lv-hot: #d93a00 !important;
+  --lv-line: rgba(18, 8, 6, .18) !important; --lv-line2: rgba(18, 8, 6, .35) !important; --lv-glow: #ff4500 !important;
+}
+
+/* dark logos / line-art on transparent backgrounds are lifted onto the night sky */
+.lv-inv { filter: invert(1) hue-rotate(180deg) brightness(1.05) !important; }
+.lv-inv-force { filter: brightness(0) invert(.94) !important; }
+
+/* ---------- site chrome ------------------------------------------------------- */
+#hwnav .hw-bar { box-shadow: 0 1px 0 rgba(255, 69, 0, .28), 0 12px 40px -24px rgba(255, 69, 0, .6) !important; }
+#hwnav .hw-trigger, #hwnav .hw-list > li > a { transition: color .25s, text-shadow .25s; }
+#hwnav .hw-trigger:hover, #hwnav .hw-list > li > a:hover,
+#hwnav .hw-trigger[aria-expanded="true"] {
+  color: var(--lv-mist) !important;
+  text-shadow: 0 0 16px rgba(255, 176, 0, .55);
+}
+#hwnav .hw-panel {
+  box-shadow: 0 0 0 1px rgba(255, 69, 0, .3), 0 40px 80px -30px rgba(0, 0, 0, .9), 0 0 90px -40px rgba(255, 69, 0, .7) !important;
+}
+#hwnav .hw-link, #hwnav .hw-mlink { transition: translate .35s var(--lv-ease), color .2s; }
+#hwnav .hw-link:hover, #hwnav .hw-mlink:hover { translate: 4px 0; }
+
+.hw-ann { box-shadow: inset 0 -1px 0 rgba(255, 69, 0, .35); }
+.hwf-col-list a { transition: translate .35s var(--lv-ease), color .2s, text-shadow .2s; }
+.hwf-col-list a:hover { translate: 4px 0; color: var(--lv-aqua) !important; text-shadow: 0 0 14px rgba(255, 176, 0, .5); }
+.hwf-soc { transition: box-shadow .35s var(--lv-ease), color .2s; }
+.hwf-soc:hover { box-shadow: 0 0 0 1px rgba(255, 176, 0, .6), 0 0 22px -4px rgba(255, 176, 0, .7); color: var(--lv-aqua) !important; }
+
+/* trust strip: logos always render light on the dark skin */
+html body .hwts.hwts.hwts[data-theme="light"] {
+  --hwts-logo-filter: brightness(0) invert(1) !important;
+  --hwts-line: rgba(255, 244, 234, .12) !important;
+}
+
+
+/* ---------- cinematic reveals ---------------------------------------------------- */
+/* elements wait hidden, then a mask wipes them open */
+.lv-wait { opacity: 0 !important; }
+.lv-in { animation-duration: 1.05s; animation-timing-function: var(--lv-ease); animation-fill-mode: both; animation-delay: var(--lv-d, 0ms); }
+.lv-in.lv-fx-wipe { animation-name: lv-wipe; }                            /* headings: left-to-right curtain */
+.lv-in.lv-fx-lift { animation-name: lv-lift; animation-duration: .95s; }  /* cards: rise out of a bottom slit */
+.lv-in.lv-fx-iris { animation-name: lv-iris; animation-duration: 1.2s; }  /* photos: open from centre, settle from zoom */
+
+@keyframes lv-wipe {
+  from { opacity: 0; clip-path: inset(-10% 100% -10% 0); translate: -18px 0; }
+  35%  { opacity: 1; }
+  to   { opacity: 1; clip-path: inset(-10% -2% -10% 0); translate: 0 0; }
+}
+@keyframes lv-lift {
+  from { opacity: 0; clip-path: inset(100% 0 0 0 round 14px); translate: 0 46px; }
+  to   { opacity: 1; clip-path: inset(-20% -20% -20% -20%); translate: 0 0; }
+}
+@keyframes lv-iris {
+  from { opacity: 0; clip-path: inset(18% 18% 18% 18% round 18px); scale: 1.08; filter: brightness(1.6) saturate(.4); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0 round 0); scale: 1; filter: none; }
+}
+
+/* hero headline: the curtain passes once on load */
+.lv-hero-sweep { animation: lv-sweep 1.6s var(--lv-ease) both; }
+@keyframes lv-sweep {
+  from { clip-path: inset(-10% 100% -10% 0); opacity: 0; }
+  to   { clip-path: inset(-10% -2% -10% 0); opacity: 1; }
+}
+
+/* ---------- lava mesh (injected, aria-hidden, non-interactive) ------------------ */
+.lv-sky {
+  position: absolute; top: 0; left: 0; width: 100%; height: 0;
+  pointer-events: none; z-index: 4; overflow: visible;
+  mix-blend-mode: screen;
+}
+.lv-sky.lv-sky-fixed { position: fixed; height: 100vh; overflow: hidden; }
+.lv-sky-band { position: absolute; left: 0; width: 100%; overflow: hidden; pointer-events: none; }
+.lv-blob {
+  position: absolute; display: block; pointer-events: none;
+  width: var(--w, 60vw); height: var(--w, 60vw); border-radius: 50%;
+  background: radial-gradient(closest-side, var(--c, rgba(255, 69, 0, .32)), transparent 72%);
+  opacity: var(--o, .9);
+  will-change: transform;
+  animation: lv-drift var(--t, 22s) ease-in-out infinite alternate;
+  animation-delay: var(--dl, 0s);
+}
+.lv-off .lv-blob { animation-play-state: paused; }
+@keyframes lv-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(var(--dx, 8vw), var(--dy, -4vw), 0) scale(1.18); }
+  100% { transform: translate3d(calc(var(--dx, 8vw) * -.6), calc(var(--dy, -4vw) * -1), 0) scale(.92); }
+}
+
+/* scroll progress: a thin lava line */
+.lv-progress {
+  position: fixed; left: 0; top: 0; height: 3px; width: 100%; z-index: 2147483000;
+  background: linear-gradient(90deg, var(--lv-violet), var(--lv-aqua), var(--lv-violet-hi));
+  transform-origin: 0 50%; transform: scaleX(var(--lv-progress, 0));
+  box-shadow: 0 0 12px rgba(255, 176, 0, .8), 0 0 2px rgba(255, 255, 255, .6); pointer-events: none;
+}
+
+/* ---------- small screens ------------------------------------------------------- */
+@media (max-width: 767px) {
+  .lv-blob { --w: 120vw !important; }
+  @keyframes lv-lift { from { opacity: 0; clip-path: inset(100% 0 0 0 round 12px); translate: 0 28px; } to { opacity: 1; clip-path: inset(-20% -20% -20% -20%); translate: 0 0; } }
+}
+
+/* ---------- motion preferences / print ------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .lv-in, .lv-blob, .lv-grad.lv-live, .lv-hero-sweep { animation: none !important; }
+  .lv-wait { opacity: 1 !important; }
+  .lv-card, .lv-btn, .lv-img, .lv-pill { transition: none !important; }
+}
+@media print {
+  .lv-sky, .lv-progress { display: none !important; }
+  .lv-wait { opacity: 1 !important; }
+  .lv-grad { color: #120806 !important; -webkit-text-fill-color: #120806; background: none !important; }
+}
+
+
+/* =====================================================================================
+ * Molten Lava effects. These override the shared dark base above; everything is paint only
+ * (opacity, translate, filters, shadows, backgrounds, fixed decorative layers), so no box changes size or place.
+ *   type        fire-glow headings; the hero heading flickers like a flame
+ *   motion      forge reveals: headings and cards rise white-hot and cool down; photos cool from molten orange
+ *   hover       cards glow red-hot from the bottom edge; molten shine sweeps across buttons
+ *   cursor      a trail of falling sparks; a flare and a spark burst on every click
+ *   atmosphere  embers rising from the bottom of the screen over a pulsing lava glow
+ * ===================================================================================== */
+:root { --lv-lava: #ff4500; --lv-gold: #ffb000; --lv-ember: #ffd166; }
+::selection { background: #ff4500; color: #fff4ea; }
+.lv-sky { display: none !important; }
+.lv-card.lv-glare.lv-tilting { background-image: none !important; }
+
+/* type: fire glow */
+h1, h2 { text-shadow: 0 0 18px rgba(255, 69, 0, .35), 0 0 42px rgba(255, 176, 0, .14); }
+h1 { animation: lv-flame 3.2s ease-in-out infinite; }
+@keyframes lv-flame {
+  0%, 100% { text-shadow: 0 0 18px rgba(255, 69, 0, .4), 0 0 44px rgba(255, 176, 0, .16); }
+  30%      { text-shadow: 0 0 24px rgba(255, 69, 0, .55), 0 0 60px rgba(255, 176, 0, .26); }
+  55%      { text-shadow: 0 0 14px rgba(255, 69, 0, .32), 0 0 36px rgba(255, 176, 0, .12); }
+  75%      { text-shadow: 0 0 22px rgba(255, 122, 69, .5), 0 0 54px rgba(255, 176, 0, .22); }
+}
+
+/* motion: forge reveals (white-hot, then cooling to the final colour) */
+@keyframes lv-wipe {
+  0%   { opacity: 0; translate: 0 22px; filter: blur(6px) brightness(2.4) sepia(1) saturate(5) hue-rotate(-18deg); }
+  45%  { opacity: 1; translate: 0 -3px; filter: blur(0) brightness(1.6) sepia(.6) saturate(3) hue-rotate(-10deg); }
+  100% { opacity: 1; translate: 0 0; filter: none; }
+}
+@keyframes lv-sweep {
+  0%   { opacity: 0; translate: 0 30px; filter: blur(10px) brightness(2.6) sepia(1) saturate(5) hue-rotate(-18deg); }
+  50%  { opacity: 1; translate: 0 -4px; filter: brightness(1.5) sepia(.5) saturate(2.5); }
+  100% { opacity: 1; translate: 0 0; filter: none; }
+}
+@keyframes lv-lift {
+  0%   { opacity: 0; translate: 0 36px; box-shadow: 0 0 0 0 rgba(255, 69, 0, 0); }
+  55%  { opacity: 1; translate: 0 -4px; box-shadow: 0 0 40px -4px rgba(255, 69, 0, .55); }
+  100% { opacity: 1; translate: 0 0; }
+}
+@keyframes lv-iris {
+  0%   { opacity: 0; filter: brightness(2) sepia(1) saturate(6) hue-rotate(-20deg) contrast(1.3); }
+  50%  { opacity: 1; filter: brightness(1.3) sepia(.6) saturate(3) hue-rotate(-10deg); }
+  100% { opacity: 1; filter: none; }
+}
+.lv-in.lv-fx-wipe, .lv-in.lv-fx-lift { animation-duration: 1.1s; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+.lv-in.lv-fx-iris { animation-duration: 1.4s; }
+
+/* hover: red-hot cards */
+.lv-card { transition: box-shadow .3s, border-color .3s; }
+.lv-card.lv-hot:hover {
+  animation: lv-heat 1.6s ease-in-out infinite;
+  box-shadow: 0 0 0 1px rgba(255, 122, 69, .6), inset 0 -40px 50px -40px rgba(255, 69, 0, .6), 0 0 36px -6px rgba(255, 69, 0, .55) !important;
+}
+@keyframes lv-heat {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.08) saturate(1.1); }
+}
+
+/* hover: molten shine across buttons */
+.lv-btn:hover, #hwnav .hw-btn:hover, .elementor-button:hover, .hs-button:hover, input[type="submit"]:hover, button[type="submit"]:hover {
+  background-image: linear-gradient(110deg, transparent 30%, rgba(255, 244, 234, .55) 48%, rgba(255, 209, 102, .3) 52%, transparent 70%) !important;
+  background-size: 250% 100% !important;
+  background-repeat: no-repeat !important;
+  animation: lv-shine 1.1s ease-in-out infinite;
+  box-shadow: 0 0 0 1px rgba(255, 176, 0, .8), 0 0 26px rgba(255, 69, 0, .6), 0 0 60px -10px rgba(255, 176, 0, .5) !important;
+}
+@keyframes lv-shine { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+
+/* forge layer (injected by lava.js, aria-hidden, non-interactive) */
+.lv-forge { position: fixed; inset: 0; pointer-events: none; z-index: 2147482000; overflow: hidden; }
+.lv-ember {
+  position: absolute; bottom: -12px; border-radius: 50%;
+  background: var(--c, #ffb000);
+  box-shadow: 0 0 6px 1px var(--c, #ffb000), 0 0 14px 2px rgba(255, 69, 0, .5);
+  opacity: 0;
+  animation: lv-rise var(--t, 14s) linear infinite; animation-delay: var(--d, 0s);
+}
+@keyframes lv-rise {
+  0%   { translate: 0 0; opacity: 0; }
+  8%   { opacity: .9; }
+  35%  { translate: calc(var(--drift, 40px) * .4) -38vh; }
+  65%  { translate: calc(var(--drift, 40px) * -.3) -70vh; opacity: .7; }
+  100% { translate: var(--drift, 40px) -108vh; opacity: 0; scale: .3; }
+}
+.lv-spark {
+  position: absolute; margin: -2px 0 0 -2px; border-radius: 50%;
+  background: var(--c, #ffb000); box-shadow: 0 0 8px 2px var(--c, #ffb000);
+  animation: lv-spark .8s cubic-bezier(.3, .1, .7, 1) forwards;
+}
+@keyframes lv-spark {
+  from { opacity: 1; translate: 0 0; scale: 1; }
+  to   { opacity: 0; translate: var(--dx, 0) var(--dy, 40px); scale: .2; }
+}
+.lv-flare {
+  position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 244, 234, .95), rgba(255, 176, 0, .7) 35%, rgba(255, 69, 0, 0) 70%);
+  animation: lv-flare .55s ease-out forwards;
+}
+@keyframes lv-flare { from { opacity: 1; scale: .6; } to { opacity: 0; scale: 5; } }
+
+/* atmosphere: pulsing lava glow from the bottom (html::before) and a smoky vignette (html::after).
+   Fixed pseudo-elements: not in the DOM, no layout. */
+html::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 2147481000;
+  background:
+    radial-gradient(70% 38% at 50% 112%, rgba(255, 69, 0, .30), transparent 70%),
+    radial-gradient(40% 26% at 12% 108%, rgba(255, 176, 0, .18), transparent 70%),
+    radial-gradient(40% 26% at 88% 108%, rgba(255, 122, 69, .18), transparent 70%);
+  mix-blend-mode: screen;
+  animation: lv-glow 5s ease-in-out infinite alternate;
+}
+@keyframes lv-glow { from { opacity: .6; } to { opacity: 1; } }
+html::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 2147481001;
+  background: radial-gradient(130% 100% at 50% 50%, transparent 60%, rgba(40, 6, 0, .45) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html::before, h1, .lv-card.lv-hot:hover, .lv-btn:hover, .elementor-button:hover { animation: none !important; }
+  .lv-forge { display: none; }
+}
+@media print { html::before, html::after, .lv-forge { display: none !important; } }
+
+/* hero video: shift its blue / cyan light to molten orange and red (paint only) */
+.hwh-hero-mesh video { filter: hue-rotate(180deg) saturate(1.35) brightness(.95); }
